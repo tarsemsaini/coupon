@@ -9,15 +9,17 @@ use Ashriya\Coupon\Models\Coupon;
 
 class CouponController extends Controller {
 
+   const PAGINATION = 15;
+    
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function index() {
-        $coupons = Coupon::all();
-       
-        return view('coupon::list' , ['coupons'=>$coupons]);
+        $coupons = Coupon::paginate(self::PAGINATION);
+
+        return view('coupon::list', ['coupons' => $coupons]);
     }
 
     /**
@@ -45,7 +47,8 @@ class CouponController extends Controller {
             'minAmount' => 'required',
             'maxDiscountAmount' => 'required',
             'startDateTime' => 'required|date|date_format:Y-m-d',
-            'endDateTime' => 'required|date|date_format:Y-m-d',
+            'maxTotalUse' => 'required',
+            'maxUseCustomer' => 'required',
         );
 
         $data = $request->all();
@@ -56,10 +59,10 @@ class CouponController extends Controller {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $data['status'] = 0;
-
         // if all validation rules passed 
         $coupon = Coupon::create($data);
+
+        return redirect('coupon');
     }
 
     /**
@@ -79,8 +82,7 @@ class CouponController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function edit($id) {
-       echo "test = ".$id;
-       exit;
+        return view('coupon::coupon', ['coupon' => Coupon::findOrFail($id)]);
     }
 
     /**
@@ -91,8 +93,42 @@ class CouponController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id) {
-         echo "test = ".$id;
-       exit;
+
+        $rules = array(
+            'name' => 'required',
+            'code' => 'required|unique:coupon,code,' . $id,
+            'type' => 'required',
+            'discount' => 'required',
+            'minAmount' => 'required',
+            'maxDiscountAmount' => 'required',
+            'startDateTime' => 'required|date|date_format:Y-m-d',
+            'endDateTime' => 'required|date|date_format:Y-m-d',
+            'maxTotalUse' => 'required',
+            'maxUseCustomer' => 'required',
+        );
+
+        $data = $request->all();
+        $validator = Validator::make($data, $rules);
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $coupon = Coupon::find($id);
+
+        if ($coupon) {
+            $coupon->name = $data['name'];
+            $coupon->code = $data['code'];
+            $coupon->type = $data['type'];
+            $coupon->discount = $data['discount'];
+            $coupon->minAmount = $data['minAmount'];
+            $coupon->maxDiscountAmount = $data['maxDiscountAmount'];
+            $coupon->startDateTime = $data['startDateTime'];
+            $coupon->endDateTime = $data['endDateTime'];
+            $coupon->status = $data['status'];
+            $coupon->save();
+        }
+
+        return redirect('coupon');
     }
 
     /**
@@ -102,7 +138,8 @@ class CouponController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        //
+        $coupon = Coupon::destroy($id);
+        return redirect('coupon');
     }
 
 }

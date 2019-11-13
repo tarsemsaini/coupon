@@ -2,7 +2,7 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-header">{{ __('List Coupons') }}</div>
 
@@ -17,6 +17,7 @@
                                 <th scope="col">Discount</th>
                                 <th scope="col">Start Date</th>
                                 <th scope="col">End Date</th>
+                                <th scope="col">Status</th>
                                 <th scope="col">Action</th>
                             </tr>
                         </thead>
@@ -29,8 +30,23 @@
                                 <td>{{$coupon->discount}}</td>
                                 <td>{{$coupon->startDateTime}}</td>
                                 <td>{{$coupon->endDateTime}}</td>
+                                <td>
+                                    @if($coupon->status == 0)
+                                    Enabled
+                                    @else
+
+                                    Disabled
+
+                                    @endif
                                 <td><a href="{{route('coupon.edit',$coupon->id)}}" class="btn btn-primary active" role="button" aria-pressed="true">Edit</a>
-                                   <a href="#" class="btn btn-danger active" role="button" aria-pressed="true">Delete</a></td>
+                                    <a href="javascript:void(0);" onclick="$(this).find('form').submit();" class="btn btn-danger active" >
+                                        <form action="{{ route('coupon.destroy',$coupon->id) }}" method="post" id="delete_form">
+                                            @method('DELETE')
+                                            @csrf
+                                        </form>
+                                        Delete
+                                    </a>
+                                </td>
 
                             </tr>
                             @endforeach
@@ -38,7 +54,9 @@
 
                         </tbody>
                     </table>
+                    {{ $coupons->links() }}
                 </div>
+                
             </div>
         </div>
     </div>
